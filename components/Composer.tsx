@@ -20,12 +20,14 @@ const Speech = () => {
 export default function Composer(props: {
   onSend: (text: string, image?: string) => void;
   onStop: () => void;
+  onType: () => void;
   busy: boolean;
   mode: Mode;
   setMode: (m: Mode) => void;
   vision: boolean;
+  placeholder: string;
 }) {
-  const { onSend, onStop, busy, mode, setMode, vision } = props;
+  const { onSend, onStop, onType, busy, mode, setMode, vision, placeholder } = props;
   const [text, setText] = useState("");
   const [image, setImage] = useState<string>();
   const [voice, setVoice] = useState(false);
@@ -136,10 +138,10 @@ export default function Composer(props: {
             ref={area}
             rows={1}
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => (setText(e.target.value), onType())}
             onKeyDown={onKey}
             onPaste={onPaste}
-            placeholder="Ask MAC Bot anything…"
+            placeholder={placeholder}
             aria-label="Message"
             className="block max-h-48 w-full resize-none bg-transparent px-3 py-2 text-base leading-6 outline-none placeholder:text-muted"
           />

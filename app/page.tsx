@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Brain, Briefcase, ImagePlus, Languages, Mic, ShieldCheck, Smartphone, Sparkles, Zap } from "lucide-react";
+import { ArrowRight, Bot, Brain, Briefcase, ImagePlus, Languages, Mic, ShieldCheck, Smartphone, Sparkles, Zap } from "lucide-react";
 import DemoChat from "@/components/DemoChat";
 import Mascot from "@/components/Mascot";
 import { InstallButton } from "@/components/Pwa";
@@ -9,7 +9,7 @@ const FEATURES = [
   { Icon: Languages, title: "Hinglish by default", text: "Talks the way you talk, and switches to English or Hindi the moment you do." },
   { Icon: Mic, title: "Speak & listen", text: "Ask with your voice in Hindi or English. Tap the speaker to hear any reply." },
   { Icon: Brain, title: "Think Deeper", text: "Step-by-step reasoning for maths, code and tricky decisions." },
-  { Icon: Briefcase, title: "Business Mentor", text: "First-principles startup advice with real numbers and a do-this-today action." },
+  { Icon: Bot, title: "A bot for every job", text: "Mentor, English Coach, Chef, Tutor and more. Or create and share your own." },
   { Icon: ImagePlus, title: "Sees your images", text: "Snap a doubt, a bill or a bug — and just ask about it." },
   { Icon: ShieldCheck, title: "Private by design", text: "No account needed. Your chat history lives only on your device." },
   { Icon: Smartphone, title: "Installs like an app", text: "Add it to your home screen. Full-screen, fast, on any phone." },

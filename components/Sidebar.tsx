@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, MessageSquare, Pencil, Plus, Trash, X } from "lucide-react";
+import { Check, LayoutGrid, MessageSquare, Pencil, Plus, Trash, X } from "lucide-react";
+import type { Bot } from "@/lib/bots";
 import type { Chat } from "@/lib/client";
 
 type Props = {
-  chats: Chat[];
+  bot: Bot;
+  chats: Chat[]; // this bot's chats only
   activeId: string | null;
   open: boolean;
   onClose: () => void;
   onNew: () => void;
+  onBots: () => void;
   onSelect: (id: string) => void;
   onRename: (id: string, title: string) => void;
   onDelete: (id: string) => void;
@@ -32,7 +35,7 @@ function Item({ chat, active, onSelect, onRename, onDelete }: { chat: Chat; acti
 
   return (
     <div className={`group flex items-center gap-1 rounded-xl pl-3 pr-1 transition ${active ? "bg-white/[.08] text-pearl" : "text-pearl/75 hover:bg-white/[.04]"}`}>
-      <MessageSquare size={14} className={`shrink-0 ${active ? "text-cyan" : "text-muted"}`} />
+      <MessageSquare size={14} className={`shrink-0 ${active ? "text-accent" : "text-muted"}`} />
       {editing ? (
         <input
           autoFocus
@@ -81,7 +84,7 @@ function Item({ chat, active, onSelect, onRename, onDelete }: { chat: Chat; acti
   );
 }
 
-export default function Sidebar({ chats, activeId, open, onClose, onNew, ...item }: Props) {
+export default function Sidebar({ bot, chats, activeId, open, onClose, onNew, onBots, ...item }: Props) {
   return (
     <>
       <div onClick={onClose} className={`fixed inset-0 z-30 bg-black/60 backdrop-blur-sm transition-opacity lg:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"}`} />
@@ -98,13 +101,18 @@ export default function Sidebar({ chats, activeId, open, onClose, onNew, ...item
             <X size={18} />
           </button>
         </div>
-        <div className="px-3 pt-1">
-          <button onClick={onNew} className="flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[.04] text-sm font-medium transition hover:border-cyan/30 hover:bg-white/[.07]">
-            <Plus size={16} className="text-cyan" /> New chat
-          </button>
+        <div className="grid grid-cols-2 gap-2 px-3 pt-1">
+          {[
+            { label: "New chat", Icon: Plus, onClick: onNew },
+            { label: "Bots", Icon: LayoutGrid, onClick: onBots },
+          ].map(({ label, Icon, onClick }) => (
+            <button key={label} onClick={onClick} className="flex h-11 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[.04] text-sm font-medium transition hover:border-accent/30 hover:bg-white/[.07]">
+              <Icon size={16} className="text-accent" /> {label}
+            </button>
+          ))}
         </div>
         <nav className="mt-5 flex-1 space-y-0.5 overflow-y-auto px-2 pb-4">
-          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[.14em] text-muted">Recent</p>
+          <p className="truncate px-3 pb-2 text-[11px] font-semibold uppercase tracking-[.14em] text-muted">{bot.name} · chats</p>
           {chats.length ? (
             chats.map((c) => <Item key={c.id} chat={c} active={c.id === activeId} {...item} />)
           ) : (

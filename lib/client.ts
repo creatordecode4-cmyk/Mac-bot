@@ -1,11 +1,12 @@
-// Browser-side helpers: chat storage, typewriter, voice, images and friendly errors.
+// Browser-side helpers: chat & bot storage, typewriter, voice, images and friendly errors.
 
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import type { Mode } from "./ai";
+import type { Bot } from "./bots";
 
 export type { Mode };
 export type Msg = { id: string; role: "user" | "assistant"; content: string; image?: string; error?: string };
-export type Chat = { id: string; title: string; messages: Msg[]; updatedAt: number };
+export type Chat = { id: string; title: string; messages: Msg[]; updatedAt: number; botId?: string }; // no botId = MAC Bot
 
 export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
@@ -44,6 +45,27 @@ export function saveChats(chats: Chat[]) {
       localStorage.setItem(CHATS, JSON.stringify(chats.map((c) => ({ ...c, messages: c.messages.map(({ image: _, ...m }) => m) }))));
     } catch {}
   }
+}
+
+export function loadBots(): Bot[] {
+  try {
+    return JSON.parse(store.get("bots") ?? "[]");
+  } catch {
+    return [];
+  }
+}
+export const saveBots = (bots: Bot[]) => store.set("bots", JSON.stringify(bots));
+
+/** Let the phone's back gesture close a full-screen sheet (depth 1 = Bots, 2 = bot editor) instead of leaving the app. */
+export function useBackClose(depth: number, open: boolean, close: () => void) {
+  const onClose = useEffectEvent(close);
+  useEffect(() => {
+    if (!open) return;
+    history.pushState({ sheet: depth }, "");
+    const onPop = (e: PopStateEvent) => (e.state?.sheet ?? 0) < depth && onClose();
+    addEventListener("popstate", onPop);
+    return () => removeEventListener("popstate", onPop);
+  }, [depth, open]);
 }
 
 /** What we send to /api/chat: the last 20 messages (skipping failed turns); images only on the most recent ones. */

@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import Markdown from "./Markdown";
 import { Avatar, Dots } from "./Message";
+import { BOTS } from "@/lib/bots";
 
 // A scripted conversation that plays on loop — no API calls, so it never burns your free quota.
 const SCRIPT = [
@@ -59,6 +60,7 @@ export default function DemoChat() {
   }, []);
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="glass relative overflow-hidden rounded-[28px] shadow-[0_30px_100px_-30px_rgb(139_92_246/.55)]">
       <div className="flex items-center gap-3 border-b border-white/[.06] px-5 py-3.5">
         <img src="/mascot.webp" alt="" className="h-8 w-auto" />
@@ -76,14 +78,14 @@ export default function DemoChat() {
       </div>
       <div className="flex h-[420px] flex-col justify-end gap-5 overflow-hidden px-5 py-5 [mask-image:linear-gradient(to_bottom,transparent,black_18%)]">
         <AnimatePresence initial={false}>
-          {lines.map((l) =>
+          {lines.map((l, i) =>
             l.role === "user" ? (
               <motion.div key={l.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex justify-end">
                 <p className="max-w-[85%] rounded-3xl rounded-br-lg border border-white/10 bg-gradient-to-br from-violet/30 to-cyan/[.12] px-4 py-2.5 text-sm">{l.text}</p>
               </motion.div>
             ) : (
               <motion.div key={l.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex gap-3 text-sm">
-                <Avatar />
+                <Avatar bot={BOTS[0]} mood={i === lines.length - 1 ? (l.typing ? "happy" : "idle") : undefined} />
                 <div className="min-w-0 flex-1 pt-1">
                   <Markdown text={l.text} typing={l.typing} />
                 </div>
@@ -92,7 +94,7 @@ export default function DemoChat() {
           )}
           {thinking && (
             <motion.div key="thinking" layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex gap-3">
-              <Avatar thinking />
+              <Avatar bot={BOTS[0]} mood="thinking" />
               <Dots />
             </motion.div>
           )}
@@ -105,5 +107,6 @@ export default function DemoChat() {
         </span>
       </Link>
     </div>
+    </MotionConfig>
   );
 }

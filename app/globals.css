@@ -12,8 +12,6 @@
 
   --animate-float: float 6s ease-in-out infinite;
   --animate-shadow: shadow 6s ease-in-out infinite;
-  --animate-think: think 1.4s ease-in-out infinite;
-  --animate-wave: wave 1.8s ease-in-out 0.4s 1;
 
   @keyframes float {
     0%, 100% { transform: translateY(0); }
@@ -23,16 +21,11 @@
     0%, 100% { transform: scale(1); opacity: 1; }
     50% { transform: scale(0.78); opacity: 0.55; }
   }
-  @keyframes wave {
-    0%, 100% { transform: rotate(0); }
-    15%, 45% { transform: rotate(16deg); }
-    30% { transform: rotate(-8deg); }
-    60% { transform: rotate(-4deg); }
-  }
-  @keyframes think {
-    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
-    50% { transform: scale(1.12); filter: drop-shadow(0 0 10px rgb(34 229 255 / 0.8)); }
-  }
+}
+
+/* Each bot sets --accent (its color); `bg-accent`, `text-accent`, `border-accent/40`… follow it. */
+@theme inline {
+  --color-accent: var(--accent, #22e5ff);
 }
 
 /* ---------- reusable pieces ---------- */
@@ -43,7 +36,7 @@
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
 }
 @utility bg-brand {
-  background-image: linear-gradient(110deg, var(--color-cyan), var(--color-violet));
+  background-image: linear-gradient(110deg, var(--accent, var(--color-cyan)), var(--color-violet));
 }
 @utility text-gradient {
   background: linear-gradient(100deg, var(--color-cyan) 10%, var(--color-violet) 90%);
@@ -61,7 +54,7 @@
   border-radius: 9999px;
   font-weight: 600;
   color: var(--color-night);
-  background-image: linear-gradient(110deg, var(--color-cyan), var(--color-violet));
+  background-image: linear-gradient(110deg, var(--accent, var(--color-cyan)), var(--color-violet));
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 10px 40px -10px rgb(139 92 246 / 0.8), 0 0 28px -6px rgb(34 229 255 / 0.5);
   transition: transform 0.2s, box-shadow 0.2s;
   &:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 14px 50px -10px rgb(139 92 246 / 0.95), 0 0 36px -4px rgb(34 229 255 / 0.6); }
@@ -119,10 +112,9 @@ body { background: var(--color-night); }
 @keyframes drift-b { to { transform: translate(-24vw, -18vh) scale(1.1); } }
 @keyframes drift-c { to { transform: translate(-30vw, 10vh) scale(1.3); } }
 
-.mascot-glow {
-  background: radial-gradient(closest-side, rgb(34 229 255 / 0.6), rgb(139 92 246 / 0.45) 55%, transparent);
-  filter: blur(14px);
-}
+.mascot-glow { filter: blur(14px); }
+.happy-eyes { filter: drop-shadow(0 0 10px rgb(34 229 255 / 0.9)); }
+.happy-eyes path { fill: none; stroke: #a5faff; stroke-width: 26; stroke-linecap: round; }
 
 /* ---------- chat bits ---------- */
 .dots span {
@@ -134,8 +126,9 @@ body { background: var(--color-night); }
 .dots span:nth-child(3) { animation-delay: 0.3s; }
 @keyframes dot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-5px); opacity: 1; } }
 
-.mic-on { color: var(--color-night) !important; background: var(--color-cyan) !important; box-shadow: 0 0 0 0 rgb(34 229 255 / 0.6); animation: ping 1.4s infinite; }
-@keyframes ping { 70% { box-shadow: 0 0 0 10px rgb(34 229 255 / 0); } 100% { box-shadow: 0 0 0 0 rgb(34 229 255 / 0); } }
+.mic-on { position: relative; color: var(--color-night) !important; background: var(--accent, var(--color-cyan)) !important; }
+.mic-on::after { content: ""; position: absolute; inset: 0; border-radius: inherit; border: 2px solid var(--accent, var(--color-cyan)); animation: ping 1.4s ease-out infinite; }
+@keyframes ping { to { transform: scale(1.7); opacity: 0; } }
 
 /* ---------- markdown replies ---------- */
 .md { line-height: 1.7; overflow-wrap: anywhere; }
@@ -145,8 +138,8 @@ body { background: var(--color-night); }
 .md ul { list-style: disc; padding-left: 1.3em; }
 .md ol { list-style: decimal; padding-left: 1.4em; }
 .md li + li, .md li > ul, .md li > ol { margin-top: 0.35em; }
-.md li::marker { color: var(--color-cyan); }
-.md a { color: var(--color-cyan); text-decoration: underline; text-underline-offset: 3px; }
+.md li::marker { color: var(--accent, var(--color-cyan)); }
+.md a { color: var(--accent, var(--color-cyan)); text-decoration: underline; text-underline-offset: 3px; }
 .md strong { color: #fff; font-weight: 650; }
 .md :not(pre) > code { font-family: var(--font-mono); font-size: 0.86em; background: rgb(255 255 255 / 0.07); border: 1px solid rgb(255 255 255 / 0.08); padding: 0.1em 0.38em; border-radius: 6px; }
 .md blockquote { border-left: 2px solid var(--color-violet); padding-left: 1em; color: var(--color-muted); }
@@ -156,7 +149,7 @@ body { background: var(--color-night); }
 .md hr { border-color: rgb(255 255 255 / 0.1); }
 .md.typing > :last-child::after {
   content: ""; display: inline-block; width: 0.5em; height: 1.05em; margin-left: 2px; vertical-align: -0.15em;
-  border-radius: 2px; background: var(--color-cyan); box-shadow: 0 0 10px var(--color-cyan);
+  border-radius: 2px; background: var(--accent, var(--color-cyan)); box-shadow: 0 0 10px var(--accent, var(--color-cyan));
   animation: caret 1s steps(2) infinite;
 }
 @keyframes caret { 50% { opacity: 0; } }

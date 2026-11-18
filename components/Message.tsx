@@ -3,13 +3,16 @@
 import { memo, useEffect, useState } from "react";
 import { Check, Copy, RotateCcw, Square, Volume2 } from "lucide-react";
 import Markdown from "./Markdown";
+import Mascot, { BotIcon, type Mood } from "./Mascot";
+import type { Bot } from "@/lib/bots";
 import { ERRORS, speak, useTypewriter, type Msg } from "@/lib/client";
 
-export function Avatar({ thinking = false }: { thinking?: boolean }) {
+/** With a mood the avatar is alive (only the newest reply); otherwise it's a still image. */
+export function Avatar({ bot, mood }: { bot: Bot; mood?: Mood }) {
   return (
-    <div className={`relative mt-0.5 size-8 shrink-0 ${thinking ? "animate-think" : ""}`}>
-      <span className="absolute inset-0.5 rounded-full bg-gradient-to-br from-cyan/40 to-violet/40 blur-md" />
-      <img src="/mascot.webp" alt="" className="relative size-full object-contain" />
+    <div className="relative mt-0.5 flex size-8 shrink-0 justify-center">
+      <span className="absolute inset-1 rounded-full opacity-35 blur-md" style={{ background: bot.color }} />
+      {mood ? <Mascot bot={bot} mood={mood} className="h-full" /> : <BotIcon bot={bot} className="relative size-full" />}
     </div>
   );
 }
@@ -28,7 +31,9 @@ function Actions({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [canSpeak, setCanSpeak] = useState(false);
-  useEffect(() => setCanSpeak("speechSynthesis" in window), []);
+  useEffect(() => {
+    setCanSpeak("speechSynthesis" in window);
+  }, []);
   useEffect(() => () => void (speaking && speechSynthesis.cancel()), [speaking]);
 
   const copy = () =>
@@ -56,7 +61,9 @@ function Actions({ text }: { text: string }) {
   );
 }
 
-function Message({ msg, streaming, animate, onRetry }: { msg: Msg; streaming: boolean; animate: boolean; onRetry: (id: string) => void }) {
+type Props = { msg: Msg; bot: Bot; streaming: boolean; animate: boolean; mood?: Mood; onRetry: (id: string) => void };
+
+function Message({ msg, bot, streaming, animate, mood, onRetry }: Props) {
   const shown = useTypewriter(msg.content, animate);
   const typing = streaming || shown.length < msg.content.length;
 
@@ -76,7 +83,7 @@ function Message({ msg, streaming, animate, onRetry }: { msg: Msg; streaming: bo
   const thinking = streaming && !msg.content;
   return (
     <div className="flex gap-3">
-      <Avatar thinking={thinking} />
+      <Avatar bot={bot} mood={mood} />
       <div className="min-w-0 flex-1 pt-0.5 text-[15px]">
         {thinking ? <Dots /> : shown && <Markdown text={shown} typing={typing} />}
         {msg.error && (

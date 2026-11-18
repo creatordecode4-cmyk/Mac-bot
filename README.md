@@ -10,13 +10,15 @@ Built with Next.js (App Router), Tailwind CSS and Framer Motion. Installable on 
 
 - **Streaming replies** with a smooth typewriter effect, Markdown, tables and code blocks with syntax highlighting and a copy button
 - **Memory**: the last ~20 messages go with every question
+- **Bots**: MAC Bot, Business Mentor, English Coach, Coding Buddy, Study Tutor, Startup Idea Generator, Fitness Coach and Chef, each with its own look, color and chat history
+- **Bot creator**: make your own bot (name, avatar, color, personality, greeting), let AI draft its instructions, then export it as a file for friends to import
 - **Chat history** saved on your device (localStorage), with rename and delete
 - **Voice input** in Hindi or English, plus a **read-aloud** button on every reply
-- **Modes**: ⚡ Fast · 🧠 Think Deeper (step-by-step) · 💼 Business Mentor
+- **Modes**: ⚡ Fast · 🧠 Think Deeper (step-by-step) · 💼 Business Mentor, on top of any bot
 - **Hinglish by default**, and it switches to your language automatically
 - **Image upload** when the AI model supports vision (Gemini does)
 - **Friendly errors**: hit the free rate limit and MAC Bot asks for a chai break instead of crashing
-- **Living mascot**: floats, blinks and follows your cursor or finger with its eyes
+- **Living mascot**: blinks, glances around, looks down while you type, spins while it thinks and smiles with a bounce when a reply arrives (calmer with "reduce motion" on)
 - **Installable app** (manifest + service worker), works on a 380px phone first
 
 ## 🚀 Quick start (about 5 minutes)
@@ -99,16 +101,24 @@ Open your Vercel link on your phone:
 
 It opens full-screen with the MAC Bot icon, like a real app.
 
+## 🤖 Bots
+
+Tap **Bots** in the chat header (or in the menu) to switch bots. Every bot keeps its own chat history, and the Fast / Think Deeper / Mentor switch works with all of them.
+
+**Create your own:** Bots → **Create your own bot**. Give it a name, a one-line description, an emoji (or the mascot in your color) and a personality. Tap **✨ Make it with AI** to have it write the instructions from your one-line description, check the live preview, then save.
+
+**Share a bot:** tap the ⬇ icon on your bot to download it as a `.json` file. A friend opens Bots → **Import**, picks the file, previews it and saves. Custom bots live in the browser only: no database, no login.
+
 ## 🎨 Make it yours
 
 | What | Where |
 | --- | --- |
-| Personality, language rules, the three modes | `lib/ai.ts` |
+| Built-in bots (names, colors, personalities, starter chips) | `lib/bots.ts` |
+| Shared rules (honesty, language), the three modes | `lib/ai.ts` |
 | Providers and default models | `lib/ai.ts` (`PRESETS`) |
 | Friendly error messages | `lib/client.ts` (`ERRORS`) |
 | Colors, glass effect, animations | `app/globals.css` |
 | Landing page copy | `app/page.tsx` |
-| Suggestion chips | `components/Chat.tsx` |
 
 The mascot: `public/bot.png` is the original art. `public/mascot-body.webp` plus the two `mascot-eye-*.webp` layers are cut from it, so the eyes can blink and look around. `mascot.webp` is the small avatar. The app icons and share image are made from it too.
 
@@ -121,9 +131,10 @@ app/
   api/chat/route.ts   Streams replies from the AI provider
   layout.tsx          Fonts, metadata, aurora background
   manifest.ts         PWA manifest
-components/           Chat, Composer, Sidebar, Message, Markdown, Mascot, DemoChat, Pwa
-lib/ai.ts             Providers + system prompt (server only)
-lib/client.ts         Storage, typewriter, voice, images, friendly errors (browser)
+components/           Chat, Composer, Sidebar, Message, Markdown, Mascot, Bots, BotEditor, DemoChat, Pwa
+lib/ai.ts             Providers + shared rules and modes (server only)
+lib/bots.ts           Built-in bots + bot file import/export
+lib/client.ts         Chat & bot storage, typewriter, voice, images, friendly errors (browser)
 public/sw.js          Service worker (offline app shell)
 ```
 

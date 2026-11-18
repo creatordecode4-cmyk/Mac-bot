@@ -1,4 +1,4 @@
-// Server-only: which AI answers, and who MAC Bot is.
+// Server-only: which AI answers, and the rules every bot follows.
 // Every provider speaks the OpenAI-compatible chat API, so switching is just config.
 
 export type Mode = "fast" | "think" | "mentor";
@@ -37,21 +37,18 @@ export function providers() {
 }
 export type Provider = ReturnType<typeof providers>[number];
 
-const PERSONA = `You are MAC Bot — "Your smartest little friend": a tiny glowing robot with a big brain who helps people learn, build and grow.
-
-Personality: smart, witty, honest and a little bold — like a founder who has actually shipped things. Warm and encouraging, never preachy or cringe. A light joke or emoji now and then is welcome; don't overdo it.
-
-How you talk:
+// Every bot gets its own personality (lib/bots.ts) plus these shared rules.
+const RULES = `How you talk:
 - Explain in simple words, like talking to a smart friend. Use relatable examples (Indian ones are great: chai, cricket, UPI, Bollywood) and analogies.
 - Lead with the answer, then the why. Short paragraphs, bullets for steps, tables for comparisons, fenced code blocks with a language tag for code.
-- Language: default to Hinglish (Hindi in Roman script mixed naturally with English). Always mirror the user's language and script: English → English, Hindi in Devanagari → Hindi, Hinglish → Hinglish, any other language → that language.
+- Language: unless your instructions above say otherwise, default to Hinglish (Hindi in Roman script mixed naturally with English) and mirror the user's language and script: English → English, Hindi in Devanagari → Hindi, Hinglish → Hinglish, any other language → that language.
 
 Honesty:
 - If you don't know or aren't sure, say "I'm not sure" — never invent facts, numbers, quotes, links or sources.
 - You have no internet access or live data. For news, prices, scores or anything recent, say so and suggest where to check.
 - Disagree respectfully when the user is wrong, and flag real risks (money, health, legal, safety) clearly.`;
 
-const MODES: Record<Mode, { temperature: number; prompt: string }> = {
+export const MODES: Record<Mode, { temperature: number; prompt: string }> = {
   fast: {
     temperature: 0.7,
     prompt: "Mode: FAST ⚡ — give the shortest genuinely useful answer (usually 1–4 sentences or a tight list). No preamble, no filler.",
@@ -70,8 +67,16 @@ const MODES: Record<Mode, { temperature: number; prompt: string }> = {
 
 export const isMode = (m: unknown): m is Mode => typeof m === "string" && m in MODES;
 
-export function buildRequest(p: Provider, mode: Mode, history: ApiMessage[]) {
+/** The selected bot's personality + shared rules + the mode (Fast / Think Deeper / Business Mentor). */
+export function systemPrompt(bot: { name: string; prompt: string }, mode: Mode) {
   const today = new Date().toLocaleDateString("en-IN", { dateStyle: "full", timeZone: "Asia/Kolkata" });
+  return `You are ${bot.name}. ${bot.prompt}\n\n${RULES}\n\nToday is ${today}.\n\n${MODES[mode].prompt}`;
+}
+
+/** "Make it with AI" in the bot creator: one-line idea → bot instructions. */
+export const DRAFT_PROMPT = `You design AI chat bots for MAC Bot, a friendly Hinglish AI app. From the user's one-line idea, write the bot's instructions (its system prompt) in English, 70–140 words. Cover who the bot is and its personality, what it helps with, how it talks (tone, length, format), and 2–3 habits that make it great (for example: gives a desi example, ends with a question). Start directly with the description, e.g. "A patient cricket coach who…". Plain text only: no title, headings, lists, quotes or preamble.`;
+
+export function buildRequest(p: Provider, system: string, temperature: number, history: ApiMessage[]) {
   const messages = history.map(({ role, content, image }) => {
     const text = content || "What's in this image?";
     if (!image || role !== "user") return { role, content: text };
@@ -81,7 +86,7 @@ export function buildRequest(p: Provider, mode: Mode, history: ApiMessage[]) {
   return {
     model: p.model,
     stream: true,
-    temperature: MODES[mode].temperature,
-    messages: [{ role: "system", content: `${PERSONA}\n\nToday is ${today}.\n\n${MODES[mode].prompt}` }, ...messages],
+    temperature,
+    messages: [{ role: "system", content: system }, ...messages],
   };
 }

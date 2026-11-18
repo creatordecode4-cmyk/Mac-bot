@@ -1,4 +1,5 @@
-import { buildRequest, isMode, providers, type ApiMessage } from "@/lib/ai";
+import { buildRequest, DRAFT_PROMPT, isMode, MODES, providers, systemPrompt, type ApiMessage } from "@/lib/ai";
+import { BOTS } from "@/lib/bots";
 
 export const maxDuration = 60; // seconds — fits Vercel's free (Hobby) plan
 
@@ -45,19 +46,39 @@ function textStream(body: ReadableStream<Uint8Array>) {
   );
 }
 
+const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
-  const history: ApiMessage[] = (Array.isArray(body?.messages) ? body.messages : [])
-    .filter((m: ApiMessage) => (m?.role === "user" || m?.role === "assistant") && typeof m.content === "string")
-    .slice(-20) // memory: the last ~20 messages
-    .map((m: ApiMessage) => ({
-      role: m.role,
-      content: m.content.slice(0, 12_000),
-      image: typeof m.image === "string" && m.image.startsWith("data:image/") ? m.image : undefined,
-    }));
-  while (history[0]?.role === "assistant") history.shift();
-  if (!history.length) return fail("bad_request", 400);
-  const mode = isMode(body?.mode) ? body.mode : "fast";
+  let history: ApiMessage[];
+  let system: string;
+  let temperature: number;
+
+  if (body?.task === "draft") {
+    // "Make it with AI" in the bot creator: one-line idea → bot instructions.
+    const idea = str(body.idea, 300);
+    if (!idea) return fail("bad_request", 400);
+    history = [{ role: "user", content: `Bot name: ${str(body.name, 40) || "(not chosen yet)"}\nIdea: ${idea}` }];
+    system = DRAFT_PROMPT;
+    temperature = 0.8;
+  } else {
+    history = (Array.isArray(body?.messages) ? body.messages : [])
+      .filter((m: ApiMessage) => (m?.role === "user" || m?.role === "assistant") && typeof m.content === "string")
+      .slice(-20) // memory: the last ~20 messages
+      .map((m: ApiMessage) => ({
+        role: m.role,
+        content: m.content.slice(0, 12_000),
+        image: typeof m.image === "string" && m.image.startsWith("data:image/") ? m.image : undefined,
+      }));
+    while (history[0]?.role === "assistant") history.shift();
+    if (!history.length) return fail("bad_request", 400);
+    const asked: unknown = body?.mode;
+    const mode = isMode(asked) ? asked : "fast";
+    // The selected bot's personality arrives with every request (custom bots live only in the browser).
+    const bot = { name: str(body?.bot?.name, 60) || BOTS[0].name, prompt: str(body?.bot?.prompt, 4000) || BOTS[0].prompt };
+    system = systemPrompt(bot, mode);
+    temperature = MODES[mode].temperature;
+  }
 
   let error = "no_key";
   for (const p of providers()) {
@@ -66,7 +87,7 @@ export async function POST(req: Request) {
       const res = await fetch(`${p.url.replace(/\/$/, "")}/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(p.key && { Authorization: `Bearer ${p.key}` }) },
-        body: JSON.stringify(buildRequest(p, mode, history)),
+        body: JSON.stringify(buildRequest(p, system, temperature, history)),
         signal: req.signal,
       });
       if (res.ok && res.body) {
