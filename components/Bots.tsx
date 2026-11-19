@@ -17,7 +17,7 @@ type Props = {
   onDelete: (id: string) => void;
 };
 
-const NEW: Bot = { id: "", name: "", tagline: "", avatar: "mascot", color: "#8B5CF6", greeting: "", prompt: "", custom: true };
+const NEW: Bot = { id: "", name: "", tagline: "", badge: "", color: "#8B5CF6", greeting: "", prompt: "", custom: true };
 
 /** Save a bot as a .json file that anyone can import. */
 function download(bot: Bot) {

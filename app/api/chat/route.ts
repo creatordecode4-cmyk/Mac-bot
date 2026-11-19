@@ -1,4 +1,4 @@
-import { buildRequest, DRAFT_PROMPT, isMode, MODES, providers, systemPrompt, type ApiMessage } from "@/lib/ai";
+import { buildRequest, DRAFT_PROMPT, isMode, providers, systemPrompt, TEMPERATURE, type ApiMessage } from "@/lib/ai";
 import { BOTS } from "@/lib/bots";
 
 export const maxDuration = 60; // seconds — fits Vercel's free (Hobby) plan
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     if (!idea) return fail("bad_request", 400);
     history = [{ role: "user", content: `Bot name: ${str(body.name, 40) || "(not chosen yet)"}\nIdea: ${idea}` }];
     system = DRAFT_PROMPT;
-    temperature = 0.8;
+    temperature = 0.7;
   } else {
     history = (Array.isArray(body?.messages) ? body.messages : [])
       .filter((m: ApiMessage) => (m?.role === "user" || m?.role === "assistant") && typeof m.content === "string")
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     // The selected bot's personality arrives with every request (custom bots live only in the browser).
     const bot = { name: str(body?.bot?.name, 60) || BOTS[0].name, prompt: str(body?.bot?.prompt, 4000) || BOTS[0].prompt };
     system = systemPrompt(bot, mode);
-    temperature = MODES[mode].temperature;
+    temperature = TEMPERATURE;
   }
 
   let error = "no_key";

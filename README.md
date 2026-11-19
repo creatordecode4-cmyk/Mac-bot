@@ -10,7 +10,7 @@ Built with Next.js (App Router), Tailwind CSS and Framer Motion. Installable on 
 
 - **Streaming replies** with a smooth typewriter effect, Markdown, tables and code blocks with syntax highlighting and a copy button
 - **Memory**: the last ~20 messages go with every question
-- **Bots**: MAC Bot, Business Mentor, English Coach, Coding Buddy, Study Tutor, Startup Idea Generator, Fitness Coach and Chef, each with its own look, color and chat history
+- **Bots**: MAC Bot, Business Mentor, English Coach, Coding Buddy, Study Tutor, Startup Idea Generator, Fitness Coach and Chef. Each one is the MAC mascot in its own color with a small role badge, and keeps its own chat history
 - **Bot creator**: make your own bot (name, avatar, color, personality, greeting), let AI draft its instructions, then export it as a file for friends to import
 - **Chat history** saved on your device (localStorage), with rename and delete
 - **Voice input** in Hindi or English, plus a **read-aloud** button on every reply
@@ -68,11 +68,12 @@ Every provider uses the same OpenAI-compatible API, so switching is just config.
 | --- | --- | --- | --- |
 | `gemini` | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) → `GEMINI_API_KEY` | `gemini-flash-latest` | ✅ |
 | `groq` | [console.groq.com/keys](https://console.groq.com/keys) → `GROQ_API_KEY` | `openai/gpt-oss-120b` | ❌ |
-| `openrouter` | [openrouter.ai/keys](https://openrouter.ai/keys) → `OPENROUTER_API_KEY` | `openrouter/free` (auto-picks a free model) | ✅ |
+| `openrouter` | [openrouter.ai/keys](https://openrouter.ai/keys) → `OPENROUTER_API_KEY` | `google/gemma-4-31b-it:free` | ✅ |
 | `custom` | any OpenAI-compatible server (Ollama, LM Studio…) → `CUSTOM_BASE_URL` | `CUSTOM_MODEL` | `CUSTOM_VISION=true` |
 
 - **Auto-fallback:** set `AI_PROVIDER=gemini,groq` with both keys. If Gemini is rate-limited or down, MAC Bot quietly answers with Groq.
 - **Change a model:** set `GEMINI_MODEL`, `GROQ_MODEL` or `OPENROUTER_MODEL` (for example `GEMINI_MODEL=gemini-flash-lite-latest`, which usually has higher free limits).
+- **OpenRouter model:** the default is `google/gemma-4-31b-it:free`, a Google instruction-tuned model that follows formatting rules well, handles Hindi/Hinglish and reads images. For harder reasoning try `OPENROUTER_MODEL=nvidia/nemotron-3-ultra-550b-a55b:free` (slower, text only, so also set `OPENROUTER_VISION=false`). Free models come and go: pick any model ending in `:free` from [openrouter.ai/models](https://openrouter.ai/models?max_price=0).
 - Leave `AI_PROVIDER` empty and MAC Bot uses the first provider that has a key.
 
 Restart `npm run dev` after editing `.env.local`. On Vercel, redeploy after changing variables.
@@ -105,7 +106,7 @@ It opens full-screen with the MAC Bot icon, like a real app.
 
 Tap **Bots** in the chat header (or in the menu) to switch bots. Every bot keeps its own chat history, and the Fast / Think Deeper / Mentor switch works with all of them.
 
-**Create your own:** Bots → **Create your own bot**. Give it a name, a one-line description, an emoji (or the mascot in your color) and a personality. Tap **✨ Make it with AI** to have it write the instructions from your one-line description, check the live preview, then save.
+**Create your own:** Bots → **Create your own bot**. Give it a name, a one-line description, a color (the mascot recolors live), a badge and a personality. Tap **✨ Make it with AI** to have it write the instructions from your one-line description, check the live preview, then save.
 
 **Share a bot:** tap the ⬇ icon on your bot to download it as a `.json` file. A friend opens Bots → **Import**, picks the file, previews it and saves. Custom bots live in the browser only: no database, no login.
 
@@ -114,7 +115,7 @@ Tap **Bots** in the chat header (or in the menu) to switch bots. Every bot keeps
 | What | Where |
 | --- | --- |
 | Built-in bots (names, colors, personalities, starter chips) | `lib/bots.ts` |
-| Shared rules (honesty, language), the three modes | `lib/ai.ts` |
+| Answer rules for every bot (answer first, be specific, one next step), the three modes, temperature | `lib/ai.ts` |
 | Providers and default models | `lib/ai.ts` (`PRESETS`) |
 | Friendly error messages | `lib/client.ts` (`ERRORS`) |
 | Colors, glass effect, animations | `app/globals.css` |

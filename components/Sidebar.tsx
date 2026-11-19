@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, LayoutGrid, MessageSquare, Pencil, Plus, Trash, X } from "lucide-react";
+import { BotIcon } from "./Mascot";
 import type { Bot } from "@/lib/bots";
 import type { Chat } from "@/lib/client";
 
@@ -112,7 +113,10 @@ export default function Sidebar({ bot, chats, activeId, open, onClose, onNew, on
           ))}
         </div>
         <nav className="mt-5 flex-1 space-y-0.5 overflow-y-auto px-2 pb-4">
-          <p className="truncate px-3 pb-2 text-[11px] font-semibold uppercase tracking-[.14em] text-muted">{bot.name} · chats</p>
+          <p className="flex items-center gap-2 px-3 pb-2 text-[11px] font-semibold uppercase tracking-[.14em] text-muted">
+            <BotIcon bot={bot} className="size-6" />
+            <span className="truncate">{bot.name} · chats</span>
+          </p>
           {chats.length ? (
             chats.map((c) => <Item key={c.id} chat={c} active={c.id === activeId} {...item} />)
           ) : (

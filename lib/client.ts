@@ -2,7 +2,7 @@
 
 import { useEffect, useEffectEvent, useState } from "react";
 import type { Mode } from "./ai";
-import type { Bot } from "./bots";
+import { toBot, type Bot } from "./bots";
 
 export type { Mode };
 export type Msg = { id: string; role: "user" | "assistant"; content: string; image?: string; error?: string };
@@ -49,7 +49,8 @@ export function saveChats(chats: Chat[]) {
 
 export function loadBots(): Bot[] {
   try {
-    return JSON.parse(store.get("bots") ?? "[]");
+    const saved: unknown[] = JSON.parse(store.get("bots") ?? "[]");
+    return saved.map((b) => toBot(b, true)).filter((b): b is Bot => !!b?.id);
   } catch {
     return [];
   }

@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { ArrowLeft, Download, Sparkles, Trash } from "lucide-react";
-import Mascot, { BotIcon } from "./Mascot";
+import { ArrowLeft, Ban, Download, Sparkles, Trash } from "lucide-react";
+import Mascot, { BADGES, BotIcon } from "./Mascot";
 import type { Bot } from "@/lib/bots";
 import { ERRORS, uid } from "@/lib/client";
 
-const AVATARS = ["mascot", "🤖", "🧠", "💼", "📚", "💻", "🎨", "🎮", "🏏", "🎵", "🧘", "✈️", "💰", "🩺", "⚖️", "🐶", "🌱", "🔮"];
-const COLORS = ["#22E5FF", "#8B5CF6", "#F472B6", "#F87171", "#FB923C", "#FACC15", "#34D399", "#60A5FA"];
+const COLORS = ["#22E5FF", "#8B5CF6", "#F9E93A", "#FFA600", "#FB6603", "#F3223F", "#FF3DC2", "#4886FE", "#4CEF60"];
 const field = "w-full rounded-2xl border border-white/10 bg-white/[.04] px-4 py-3 text-base outline-none transition placeholder:text-muted/70 focus:border-accent/60";
 
 function Field({ label, action, children }: { label: string; action?: ReactNode; children: ReactNode }) {
@@ -37,7 +36,7 @@ export default function BotEditor({ bot, onSave, onCancel, onDelete, onExport }:
   const valid = !!name && !!f.prompt.trim();
   const greeting = f.greeting.trim() || `Hi! I'm ${name || "your new bot"} 👋 ${f.tagline.trim()}`.trim();
   const saved = !!bot.id;
-  const customEmoji = AVATARS.includes(f.avatar) ? "" : f.avatar;
+  const customEmoji = f.badge in BADGES ? "" : f.badge;
 
   // "Make it with AI": stream bot instructions from the one-line description.
   async function draft() {
@@ -118,28 +117,32 @@ export default function BotEditor({ bot, onSave, onCancel, onDelete, onExport }:
         />
       </Field>
 
-      <Field label="Avatar">
+      <Field label="Badge">
         <div className="flex flex-wrap gap-2">
-          {AVATARS.map((a) => (
-            <button
-              key={a}
-              onClick={() => set({ avatar: a })}
-              aria-label={a === "mascot" ? "Mascot avatar" : `Avatar ${a}`}
-              aria-pressed={f.avatar === a}
-              className={`grid size-11 place-items-center rounded-2xl border text-xl transition ${f.avatar === a ? "border-accent bg-accent/15" : "border-white/10 bg-white/[.03] hover:border-white/25"}`}
-            >
-              {a === "mascot" ? <BotIcon bot={{ avatar: a, color: f.color }} className="size-8" /> : a}
-            </button>
-          ))}
+          {["", ...Object.keys(BADGES)].map((b) => {
+            const Icon = BADGES[b] ?? Ban;
+            return (
+              <button
+                key={b || "none"}
+                onClick={() => set({ badge: b })}
+                aria-label={b ? `Badge ${b}` : "No badge"}
+                aria-pressed={f.badge === b}
+                className={`grid size-11 place-items-center rounded-2xl border transition ${f.badge === b ? "border-accent bg-accent/15 text-accent" : "border-white/10 bg-white/[.03] text-muted hover:border-white/25 hover:text-pearl"}`}
+              >
+                <Icon size={19} />
+              </button>
+            );
+          })}
           <input
             value={customEmoji}
-            onChange={(e) => set({ avatar: e.target.value.trim() || "mascot" })}
+            onChange={(e) => set({ badge: e.target.value.trim() })}
             maxLength={12}
             placeholder="Any emoji"
-            aria-label="Any emoji"
+            aria-label="Any emoji badge"
             className={`h-11 w-28 rounded-2xl border bg-white/[.03] px-3 text-center text-base outline-none placeholder:text-sm placeholder:text-muted/70 ${customEmoji ? "border-accent" : "border-white/10"}`}
           />
         </div>
+        <p className="mt-2 text-xs text-muted">A tiny role icon on your mascot&apos;s corner. The mascot takes your accent color below.</p>
       </Field>
 
       <Field label="Accent color">

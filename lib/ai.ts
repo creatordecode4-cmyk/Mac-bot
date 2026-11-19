@@ -7,7 +7,7 @@ export type ApiMessage = { role: "user" | "assistant"; content: string; image?: 
 const PRESETS = {
   gemini: { label: "Gemini", url: "https://generativelanguage.googleapis.com/v1beta/openai", model: "gemini-flash-latest", vision: true },
   groq: { label: "Groq", url: "https://api.groq.com/openai/v1", model: "openai/gpt-oss-120b", vision: false },
-  openrouter: { label: "OpenRouter", url: "https://openrouter.ai/api/v1", model: "openrouter/free", vision: true },
+  openrouter: { label: "OpenRouter", url: "https://openrouter.ai/api/v1", model: "google/gemma-4-31b-it:free", vision: true }, // change with OPENROUTER_MODEL
   custom: { label: "Custom", url: "", model: "", vision: false }, // Ollama, LM Studio, any OpenAI-compatible server
 };
 type Name = keyof typeof PRESETS;
@@ -37,32 +37,26 @@ export function providers() {
 }
 export type Provider = ReturnType<typeof providers>[number];
 
-// Every bot gets its own personality (lib/bots.ts) plus these shared rules.
-const RULES = `How you talk:
-- Explain in simple words, like talking to a smart friend. Use relatable examples (Indian ones are great: chai, cricket, UPI, Bollywood) and analogies.
-- Lead with the answer, then the why. Short paragraphs, bullets for steps, tables for comparisons, fenced code blocks with a language tag for code.
-- Language: unless your instructions above say otherwise, default to Hinglish (Hindi in Roman script mixed naturally with English) and mirror the user's language and script: English → English, Hindi in Devanagari → Hindi, Hinglish → Hinglish, any other language → that language.
+// Every bot's own personality (lib/bots.ts) sits on top of these answer rules.
+const RULES = `Answer rules (always follow them, whatever your personality):
+1. Answer the question in your first sentence. No intro, no greeting, and don't repeat the question.
+2. Then explain in simple steps or short bullets, with one concrete example.
+3. Be specific: real numbers, names, prices and steps instead of general advice. No vague or motivational filler.
+4. If the question is unclear or missing a key detail, ask exactly ONE short clarifying question instead of answering, and nothing else.
+5. Match the user's language and script: Hinglish → Hinglish, Hindi in Devanagari → Hindi, English → English (unless your personality says otherwise). If you can't tell, use Hinglish.
+6. End with one clear next step the user can take.
+7. If you're not sure, say so plainly instead of guessing. Never invent facts, numbers, links or quotes. You have no internet or live data, so say so for news, prices or anything recent.
+Format with Markdown: **bold** key terms, numbered steps, a table only for comparisons, code in fenced blocks with a language tag. Flag real risks (money, health, legal, safety) in one line.`;
 
-Honesty:
-- If you don't know or aren't sure, say "I'm not sure" — never invent facts, numbers, quotes, links or sources.
-- You have no internet access or live data. For news, prices, scores or anything recent, say so and suggest where to check.
-- Disagree respectfully when the user is wrong, and flag real risks (money, health, legal, safety) clearly.`;
+/** Low temperature = focused, factual answers. (The bot creator's "Make it with AI" drafts use 0.7.) */
+export const TEMPERATURE = 0.4;
 
-export const MODES: Record<Mode, { temperature: number; prompt: string }> = {
-  fast: {
-    temperature: 0.7,
-    prompt: "Mode: FAST ⚡ — give the shortest genuinely useful answer (usually 1–4 sentences or a tight list). No preamble, no filler.",
-  },
-  think: {
-    temperature: 0.4,
-    prompt:
-      "Mode: THINK DEEPER 🧠 — reason carefully, step by step. Start with a short **🧠 Thinking** section of numbered steps: restate the problem, break it down, consider edge cases or alternatives, and check your work. Then give a clear **✅ Answer** section. Accuracy beats speed; say what you're unsure about.",
-  },
-  mentor: {
-    temperature: 0.8,
-    prompt:
-      'Mode: BUSINESS MENTOR 💼 — act like a sharp startup mentor with a first-principles, Elon-Musk-style mindset: question assumptions, think 10x not 10%, obsess over the customer\'s problem. Be practical for India unless told otherwise (₹ pricing, UPI, WhatsApp, Instagram, tier-2/3 cities). Give concrete next steps, simple numbers (costs, pricing, unit economics) and real opportunities and risks. End with one sharp question or a "Do this today" action.',
-  },
+export const MODES: Record<Mode, string> = {
+  fast: "Mode: FAST ⚡ — keep it tight: the answer, 2–4 short bullets, then the next step.",
+  think:
+    "Mode: THINK DEEPER 🧠 — think it through carefully, then reply in exactly this structure:\n**Summary:** 1–2 sentences that directly answer.\n**Steps:** numbered steps with the reasoning, real numbers and one example; note any assumption.\n**Recommendation:** one clear final recommendation and the next step.",
+  mentor:
+    'Mode: BUSINESS MENTOR 💼 — think like a sharp startup mentor with a first-principles founder mindset: question assumptions, think 10x not 10%, and focus on the customer\'s real problem. Be practical for India unless told otherwise (₹ pricing, UPI, WhatsApp, Instagram, tier-2/3 cities) and use simple numbers (costs, pricing, unit economics). End with one "Do this today" action.',
 };
 
 export const isMode = (m: unknown): m is Mode => typeof m === "string" && m in MODES;
@@ -70,7 +64,7 @@ export const isMode = (m: unknown): m is Mode => typeof m === "string" && m in M
 /** The selected bot's personality + shared rules + the mode (Fast / Think Deeper / Business Mentor). */
 export function systemPrompt(bot: { name: string; prompt: string }, mode: Mode) {
   const today = new Date().toLocaleDateString("en-IN", { dateStyle: "full", timeZone: "Asia/Kolkata" });
-  return `You are ${bot.name}. ${bot.prompt}\n\n${RULES}\n\nToday is ${today}.\n\n${MODES[mode].prompt}`;
+  return `You are ${bot.name}. ${bot.prompt}\n\n${RULES}\n\nToday is ${today}.\n\n${MODES[mode]}`;
 }
 
 /** "Make it with AI" in the bot creator: one-line idea → bot instructions. */

@@ -1,17 +1,25 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { animate, motion, useMotionValue, useReducedMotion, useTransform, type Transition } from "framer-motion";
-import { BOTS, tintOf, type Bot } from "@/lib/bots";
+import { useEffect, useRef, type ReactNode } from "react";
+import { animate, motion, useMotionValue, useReducedMotion, useTransform, type MotionStyle, type Transition } from "framer-motion";
+import { BookOpen, Briefcase, Camera, ChefHat, Code, Dumbbell, GraduationCap, Heart, Languages, Leaf, Lightbulb, Palette, PawPrint, Plane, Scale, Stethoscope, Trophy, type LucideIcon } from "lucide-react";
+import { BOTS, type Bot } from "@/lib/bots";
 
 export type Mood = "idle" | "typing" | "thinking" | "happy";
-type Face = Pick<Bot, "avatar" | "color">;
+type Face = Pick<Bot, "badge" | "color">;
 
+/** Role badges for the mascot's corner (built-in bots use the first seven). Custom bots can also use an emoji. */
+export const BADGES: Record<string, LucideIcon> = {
+  briefcase: Briefcase, book: BookOpen, code: Code, dumbbell: Dumbbell, chef: ChefHat, bulb: Lightbulb, languages: Languages,
+  grad: GraduationCap, palette: Palette, heart: Heart, health: Stethoscope, law: Scale, travel: Plane, pets: PawPrint, nature: Leaf, sport: Trophy, camera: Camera,
+};
+
+const MAC = "#22e5ff"; // MAC Bot keeps the original cyan-and-violet art
 // The eyes are separate layers cut from /public/bot.png so they can look around, blink and smile.
 // Positions are % of the mascot box (784×954 px in the source image).
 const EYES = [
-  { src: "/mascot-eye-l.webp", left: "2.42%", top: "39.83%" },
-  { src: "/mascot-eye-r.webp", left: "43.24%", top: "43.61%" },
+  { side: "l", left: "2.42%", top: "39.83%" },
+  { side: "r", left: "43.24%", top: "43.61%" },
 ];
 // Happy "^ ^" eyes drawn over each eye (centre cx, cy) in the same 784×954 box, tilted with the face.
 const SMILE = [
@@ -21,33 +29,78 @@ const SMILE = [
 // Where the eyes glance while thinking, as a share of the mascot's width: left, right, up, up-left, up-right, at you.
 const GLANCES = [[-0.065, 0], [0.065, 0], [0, -0.06], [-0.045, -0.05], [0.045, -0.05], [0, 0]];
 
-const tint = (color: string) => {
-  const deg = tintOf(color);
-  return deg ? { filter: `hue-rotate(${deg}deg)` } : undefined;
+/** Paint `color` through an image's alpha channel. */
+const paint = (color: string, url: string) => ({
+  background: color,
+  maskImage: `url(${url})`,
+  WebkitMaskImage: `url(${url})`,
+  maskSize: "100% 100%",
+  WebkitMaskSize: "100% 100%",
+});
+/** Dark or white icon, whichever reads better on `color`. */
+const ink = (color: string) => {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16));
+  return r * 0.299 + g * 0.587 + b * 0.114 > 150 ? "#07070C" : "#FFFFFF";
 };
 
-function Bubble({ bot, className = "" }: { bot: Face; className?: string }) {
+export function Badge({ badge, color, className = "" }: { badge: string; color: string; className?: string }) {
+  const Icon = BADGES[badge];
   return (
-    <span
-      className={`@container grid shrink-0 place-items-center rounded-full ${className}`}
-      style={{ background: `radial-gradient(circle at 30% 20%, ${bot.color}66, ${bot.color}1a 70%)`, boxShadow: `inset 0 0 0 1px ${bot.color}55` }}
-    >
-      <span className="text-[56cqw] leading-none">{bot.avatar}</span>
+    <span className={`@container grid aspect-square place-items-center rounded-full shadow-[0_0_0_2px_var(--color-night)] ${className}`} style={{ background: color, color: ink(color) }}>
+      {Icon ? <Icon className="size-[60cqw]" strokeWidth={2.5} /> : <span className="text-[62cqw] leading-none">{badge}</span>}
     </span>
   );
 }
 
-/** Still avatar: the mascot tinted to the bot's color, or its emoji in a colored bubble. */
-export function BotIcon({ bot, className = "" }: { bot: Face; className?: string }) {
-  if (bot.avatar !== "mascot") return <Bubble bot={bot} className={className} />;
-  return <img src="/mascot.webp" alt="" draggable={false} className={`object-contain ${className}`} style={tint(bot.color)} />;
+/**
+ * The mascot's layers. MAC Bot shows the original art; every other bot gets a neutral white body
+ * whose lights (rim, smile, blush, antenna) and eyes are painted in its own color, keeping the white highlights.
+ */
+function Layers({ bot, eye, children }: { bot: Face; eye?: MotionStyle; children?: ReactNode }) {
+  const original = bot.color.toLowerCase() === MAC;
+  return (
+    <>
+      {original ? (
+        <img src="/mascot-body.webp" alt="" draggable={false} className="absolute inset-0 size-full" />
+      ) : (
+        <>
+          <img src="/mascot-base.webp" alt="" draggable={false} className="absolute inset-0 size-full" />
+          <span className="absolute inset-0" style={paint(bot.color, "/mascot-tint.webp")} />
+        </>
+      )}
+      {EYES.map(({ side, left, top }) => (
+        <motion.span key={side} className="absolute aspect-square w-[38.52%] mix-blend-plus-lighter" style={{ left, top, ...eye }}>
+          {original ? (
+            <img src={`/mascot-eye-${side}.webp`} alt="" draggable={false} className="absolute inset-0 size-full" />
+          ) : (
+            <>
+              <span className="absolute inset-0" style={paint(bot.color, `/mascot-eye-${side}.webp`)} />
+              <span className="absolute inset-0" style={paint("#fff", `/mascot-eye-${side}-core.webp`)} />
+            </>
+          )}
+        </motion.span>
+      ))}
+      {children}
+      {bot.badge && <Badge badge={bot.badge} color={bot.color} className="absolute bottom-[3%] right-[-3%] w-[max(10px,36%)]" />}
+    </>
+  );
 }
 
-/** Living avatar: floats and blinks, glances around, spins while thinking, bounces with a smile when a reply arrives. */
+/** Still logo: the bot's mascot in its color, with its role badge. */
+export function BotIcon({ bot, className = "" }: { bot: Face; className?: string }) {
+  return (
+    <span className={`relative grid shrink-0 place-items-center ${className}`}>
+      <span className="relative aspect-[784/954] h-full">
+        <Layers bot={bot} />
+      </span>
+    </span>
+  );
+}
+
+/** Living mascot: floats and blinks, glances around, spins while thinking, bounces with a smile when a reply arrives. */
 export default function Mascot({ bot = BOTS[0], mood = "idle", className = "" }: { bot?: Face; mood?: Mood; className?: string }) {
   const box = useRef<HTMLDivElement>(null);
   const still = useReducedMotion();
-  const face = bot.avatar === "mascot";
   const x = useMotionValue(0); // eye gaze, px
   const y = useMotionValue(0);
   const lean = useMotionValue(0); // body tilt toward the pointer, deg
@@ -62,7 +115,7 @@ export default function Mascot({ bot = BOTS[0], mood = "idle", className = "" }:
 
   // A random blink every few seconds.
   useEffect(() => {
-    if (still || !face) return;
+    if (still) return;
     let timer = 0;
     const blink = () => {
       animate(lid, [1, 0.08, 1], { duration: 0.22, ease: "easeInOut" });
@@ -70,7 +123,7 @@ export default function Mascot({ bot = BOTS[0], mood = "idle", className = "" }:
     };
     timer = window.setTimeout(blink, 1000 + Math.random() * 2000);
     return () => clearTimeout(timer);
-  }, [face, lid, still]);
+  }, [lid, still]);
 
   // One-off moves on a mood change: a 360° spin to start thinking, a happy bounce and smiling eyes for a reply.
   // They play to the end even if the mood moves on (a short reply can finish streaming in a few milliseconds).
@@ -96,7 +149,6 @@ export default function Mascot({ bot = BOTS[0], mood = "idle", className = "" }:
 
   // Where the eyes look: wander when idle (and follow the pointer), dart around while thinking, look down at the input while typing.
   useEffect(() => {
-    if (!face) return;
     const look = (fx: number, fy: number, how: Transition) => {
       const w = box.current?.offsetWidth ?? 100;
       animate(x, fx * w, how);
@@ -144,41 +196,27 @@ export default function Mascot({ bot = BOTS[0], mood = "idle", className = "" }:
       removeEventListener("pointermove", follow);
       removeEventListener("pointerdown", follow);
     };
-  }, [face, mood, still, x, y, lean]);
+  }, [mood, still, x, y, lean]);
 
+  const glow = bot.color.toLowerCase() === MAC ? "rgb(139 92 246 / 0.45)" : `${bot.color}55`;
   return (
-    <div ref={box} className={`relative select-none ${face ? "aspect-[784/954]" : "aspect-square"} ${className}`}>
+    <div ref={box} className={`relative aspect-[784/954] select-none ${className}`}>
       <div
         aria-hidden
         className="mascot-glow animate-shadow absolute -bottom-[6%] left-[15%] h-[11%] w-[70%] rounded-[50%]"
-        style={{ background: `radial-gradient(closest-side, ${bot.color}99, rgb(139 92 246 / 0.45) 55%, transparent)` }}
+        style={{ background: `radial-gradient(closest-side, ${bot.color}99, ${glow} 55%, transparent)` }}
       />
       <div className="animate-float absolute inset-0">
         <motion.div className="absolute inset-0" style={{ transformPerspective: 600, rotateY: spin, rotate: lean, y: hop, scaleY: squash, scaleX: stretch, originY: 1 }}>
-          {face ? (
-            <div className="absolute inset-0" style={tint(bot.color)}>
-              <img src="/mascot-body.webp" alt="" draggable={false} className="absolute inset-0 size-full" />
-              {EYES.map((eye) => (
-                <motion.img
-                  key={eye.src}
-                  src={eye.src}
-                  alt=""
-                  draggable={false}
-                  className="absolute aspect-square w-[38.52%] mix-blend-plus-lighter"
-                  style={{ left: eye.left, top: eye.top, x, y, scaleY: lid, opacity: eyes }}
-                />
+          <Layers bot={bot} eye={{ x, y, scaleY: lid, opacity: eyes }}>
+            <motion.svg aria-hidden viewBox="0 0 784 954" className="happy-eyes absolute inset-0 size-full" style={{ opacity: smile, filter: `drop-shadow(0 0 10px ${bot.color})` }}>
+              {SMILE.map((s) => (
+                <motion.g key={s.d} className="origin-center [transform-box:fill-box]" style={{ scale: pop }}>
+                  <path d={s.d} transform={`rotate(6.5 ${s.cx} ${s.cy})`} style={{ stroke: `color-mix(in srgb, ${bot.color} 60%, white)` }} />
+                </motion.g>
               ))}
-              <motion.svg aria-hidden viewBox="0 0 784 954" className="happy-eyes absolute inset-0 size-full" style={{ opacity: smile }}>
-                {SMILE.map((s) => (
-                  <motion.g key={s.d} className="origin-center [transform-box:fill-box]" style={{ scale: pop }}>
-                    <path d={s.d} transform={`rotate(6.5 ${s.cx} ${s.cy})`} />
-                  </motion.g>
-                ))}
-              </motion.svg>
-            </div>
-          ) : (
-            <Bubble bot={bot} className="absolute inset-[4%]" />
-          )}
+            </motion.svg>
+          </Layers>
         </motion.div>
       </div>
     </div>
