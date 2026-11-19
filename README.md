@@ -118,7 +118,7 @@ Tap **Bots** in the chat header (or in the menu) to switch bots. Every bot keeps
 | Answer rules for every bot (answer first, be specific, one next step), the three modes, temperature | `lib/ai.ts` |
 | Providers and default models | `lib/ai.ts` (`PRESETS`) |
 | Friendly error messages | `lib/client.ts` (`ERRORS`) |
-| Colors, glass effect, animations | `app/globals.css` |
+| Colors, glass effect, animations, the background moods (rose → teal → indigo, 45s loop) | `app/globals.css` (`.aurora`) |
 | Landing page copy | `app/page.tsx` |
 
 The mascot: `public/bot.png` is the original art. `public/mascot-body.webp` plus the two `mascot-eye-*.webp` layers are cut from it, so the eyes can blink and look around. `mascot.webp` is the small avatar. The app icons and share image are made from it too.

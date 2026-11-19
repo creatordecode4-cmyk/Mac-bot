@@ -86,31 +86,32 @@
   &:hover { color: var(--color-pearl); background: rgb(255 255 255 / 0.06); }
 }
 
-/* ---------- page background: dark + slow aurora ---------- */
+/* ---------- page background: three dark "mood" gradients (rose → teal → indigo), matched to the theme video ---------- */
 html { color-scheme: dark; -webkit-tap-highlight-color: transparent; }
 body { background: var(--color-night); }
 ::selection { background: rgb(139 92 246 / 0.4); }
 
-.aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-.aurora span { position: absolute; border-radius: 50%; will-change: transform; }
+/* Rose stays underneath; teal and indigo fade in on top, so a crossfade never dips to black. 45s loop, opacity only. */
+.aurora { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+.aurora span { position: absolute; inset: 0; }
 .aurora span:nth-child(1) {
-  width: 75vmax; height: 75vmax; top: -38vmax; left: -28vmax;
-  background: radial-gradient(closest-side, rgb(34 229 255 / 0.16), transparent);
-  animation: drift-a 26s ease-in-out infinite alternate;
+  background: radial-gradient(105% 58% at 0% 0%, #6a4441, transparent 70%), radial-gradient(90% 45% at 100% 100%, #452829, transparent 70%),
+    radial-gradient(110% 65% at 100% 0%, #100a09, transparent 70%), radial-gradient(110% 65% at 0% 100%, #0a0607, transparent 70%), #2c1a1a;
 }
 .aurora span:nth-child(2) {
-  width: 80vmax; height: 80vmax; bottom: -42vmax; right: -30vmax;
-  background: radial-gradient(closest-side, rgb(139 92 246 / 0.24), transparent);
-  animation: drift-b 32s ease-in-out infinite alternate;
+  background: radial-gradient(105% 58% at 0% 0%, #2e4253, transparent 70%), radial-gradient(90% 45% at 100% 100%, #1a3d49, transparent 70%),
+    radial-gradient(110% 65% at 100% 0%, #080a0e, transparent 70%), radial-gradient(110% 65% at 0% 100%, #02090b, transparent 70%), #11202a;
+  opacity: 0;
+  animation: mood-teal 45s ease-in-out infinite;
 }
 .aurora span:nth-child(3) {
-  width: 50vmax; height: 50vmax; top: 35%; left: 45%;
-  background: radial-gradient(closest-side, rgb(139 92 246 / 0.12), transparent);
-  animation: drift-c 38s ease-in-out infinite alternate;
+  background: radial-gradient(105% 58% at 0% 0%, #444a80, transparent 70%), radial-gradient(90% 45% at 100% 100%, #2e2c57, transparent 70%),
+    radial-gradient(110% 65% at 100% 0%, #090a15, transparent 70%), radial-gradient(110% 65% at 0% 100%, #08080e, transparent 70%), #1c1f38;
+  opacity: 0;
+  animation: mood-indigo 45s ease-in-out infinite;
 }
-@keyframes drift-a { to { transform: translate(28vw, 22vh) scale(1.15); } }
-@keyframes drift-b { to { transform: translate(-24vw, -18vh) scale(1.1); } }
-@keyframes drift-c { to { transform: translate(-30vw, 10vh) scale(1.3); } }
+@keyframes mood-teal { 0%, 26.67% { opacity: 0; } 33.33%, 66.67% { opacity: 1; } 68.89%, 100% { opacity: 0; } }
+@keyframes mood-indigo { 0%, 60% { opacity: 0; } 66.67%, 93.33% { opacity: 1; } 100% { opacity: 0; } }
 
 .mascot-glow { filter: blur(14px); }
 .happy-eyes path { fill: none; stroke-width: 26; stroke-linecap: round; } /* color + glow come from each bot */
