@@ -11,16 +11,16 @@ import { BOTS } from "@/lib/bots";
 // A scripted conversation that plays on loop — no API calls, so it never burns your free quota.
 const SCRIPT = [
   {
-    user: "Bhai, ₹0 mein kaunsa side hustle start karun? 💸",
-    bot: "Try **resume makeovers for college seniors** 🚀\n\n- Charge ₹149 per resume\n- Free Canva templates + me for the writing\n- First 10 clients: your own college WhatsApp groups\n\n**Do this today:** post one before/after sample.",
+    user: "What side hustle can I start with $0? 💸",
+    bot: "Try **resume makeovers for new grads** 🚀\n\n- Charge $29 per resume\n- Free Canva templates + me for the writing\n- First 10 clients: LinkedIn and your alumni groups\n\n**Do this today:** post one before/after sample.",
   },
   {
-    user: "Explain recursion like I'm 10",
-    bot: "Russian dolls 🪆 — open one, there's a smaller one inside, until the tiniest doll.\n\n**Recursion** = a function that calls a smaller version of itself until it hits that tiniest case (the *base case*).",
+    user: "Explícame la recursión como si tuviera 10 años",
+    bot: "Piensa en las **muñecas rusas** 🪆: abres una y dentro hay otra más pequeña, hasta llegar a la más diminuta.\n\n**Recursión** = una función que se llama a sí misma con un problema más pequeño, hasta llegar al caso más simple (el *caso base*).",
   },
   {
-    user: "Kal interview hai, nervous feel ho raha hai 😬",
-    bot: "Normal hai — nervous means you care. 💙 Quick plan:\n\n1. Prep 3 stories: a win, a fail, a team moment\n2. Practice out loud once (with me!)\n3. Sleep > last-minute cramming\n\nYou've got this. 🔥",
+    user: "Tell my team on WhatsApp: launch moves to Friday 10 AM",
+    bot: "Here's a crisp one ✅\n\n> 🚀 Heads up, team: the launch moves to **Friday, 10 AM**. Final checks Thursday at 4 PM.\n\n[Send on WhatsApp](app:whatsapp?text=%F0%9F%9A%80%20Heads%20up%2C%20team%3A%20the%20launch%20moves%20to%20Friday%2C%2010%20AM.%20Final%20checks%20Thursday%20at%204%20PM.)",
   },
 ];
 
@@ -61,7 +61,7 @@ export default function DemoChat() {
 
   return (
     <MotionConfig reducedMotion="user">
-    <div className="glass relative overflow-hidden rounded-[28px] shadow-[0_30px_100px_-30px_rgb(139_92_246/.55)]">
+    <div className="glass relative overflow-hidden rounded-[28px] shadow-[0_30px_100px_-30px_rgb(0_0_0/.8)]">
       <div className="flex items-center gap-3 border-b border-white/[.06] px-5 py-3.5">
         <img src="/mascot.webp" alt="" className="h-8 w-auto" />
         <div className="leading-tight">
@@ -81,7 +81,7 @@ export default function DemoChat() {
           {lines.map((l, i) =>
             l.role === "user" ? (
               <motion.div key={l.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex justify-end">
-                <p className="max-w-[85%] rounded-3xl rounded-br-lg border border-white/10 bg-gradient-to-br from-violet/30 to-cyan/[.12] px-4 py-2.5 text-sm">{l.text}</p>
+                <p className="bubble max-w-[85%] rounded-3xl rounded-br-lg px-4 py-2.5 text-sm">{l.text}</p>
               </motion.div>
             ) : (
               <motion.div key={l.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex gap-3 text-sm">
@@ -100,7 +100,7 @@ export default function DemoChat() {
           )}
         </AnimatePresence>
       </div>
-      <Link href="/chat" className="m-3 mt-0 flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[.03] py-2 pl-4 pr-2 text-sm text-muted transition hover:border-cyan/30">
+      <Link href="/chat" className="m-3 mt-0 flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[.03] py-2 pl-4 pr-2 text-sm text-muted transition hover:border-white/25">
         Ask MAC Bot anything…
         <span className="bg-brand ml-auto grid size-8 place-items-center rounded-full text-night">
           <ArrowUp size={16} strokeWidth={2.5} />

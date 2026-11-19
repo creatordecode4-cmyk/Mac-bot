@@ -107,7 +107,7 @@ export default function Bots({ bots, activeId, onPick, onClose, onSave, onDelete
       exit={{ opacity: 0, y: 24 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
       style={{ "--accent": "#22E5FF" } as CSSProperties}
-      className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-night/95 backdrop-blur-xl"
+      className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-night/35"
     >
       {editing ? (
         <BotEditor
@@ -119,12 +119,12 @@ export default function Bots({ bots, activeId, onPick, onClose, onSave, onDelete
         />
       ) : (
         <div className="mx-auto max-w-5xl px-4 pb-12">
-          <header className="sticky top-0 z-10 -mx-4 flex h-14 items-center gap-2 bg-night/80 px-2 backdrop-blur-xl sm:px-4">
+          <header className="sticky top-0 z-10 -mx-4 flex h-14 items-center gap-2 bg-night/60 px-2 backdrop-blur-xl sm:px-4">
             <button onClick={onClose} className="icon-btn" aria-label="Back to chat">
               <ArrowLeft size={20} />
             </button>
             <h2 className="text-lg font-semibold tracking-tight">Bots</h2>
-            <button onClick={() => file.current?.click()} className="ml-auto flex h-9 items-center gap-1.5 rounded-full border border-white/10 bg-white/[.04] px-3.5 text-sm font-medium transition hover:border-white/20">
+            <button onClick={() => file.current?.click()} className="ml-auto flex h-9 items-center gap-1.5 rounded-full border border-white/12 bg-white/[.05] px-3.5 text-sm font-medium transition hover:border-white/25 hover:bg-white/[.09]">
               <Upload size={15} /> Import
             </button>
             <input ref={file} type="file" accept=".json,application/json" hidden onChange={(e) => (importFile(e.target.files?.[0]), (e.target.value = ""))} />
@@ -133,9 +133,9 @@ export default function Bots({ bots, activeId, onPick, onClose, onSave, onDelete
           {note && <p className="mt-3 rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-2.5 text-sm text-red-200">{note}</p>}
           <button
             onClick={() => setEditing(NEW)}
-            className="mt-5 flex w-full items-center gap-4 rounded-3xl border border-dashed border-white/15 bg-white/[.02] p-4 text-left transition hover:border-cyan/40 hover:bg-white/[.04]"
+            className="mt-5 flex w-full items-center gap-4 rounded-3xl border border-dashed border-white/15 bg-white/[.03] p-4 text-left transition hover:border-white/30 hover:bg-white/[.06]"
           >
-            <span className="bg-brand grid size-12 shrink-0 place-items-center rounded-2xl text-night shadow-[0_0_24px_-6px_rgb(34_229_255/.6)]">
+            <span className="bg-brand grid size-12 shrink-0 place-items-center rounded-2xl text-night shadow-[0_6px_24px_-8px_rgb(255_255_255/.5)]">
               <Plus size={22} strokeWidth={2.5} />
             </span>
             <span>

@@ -9,7 +9,7 @@ import Mascot, { BotIcon, type Mood } from "./Mascot";
 import Message from "./Message";
 import Sidebar from "./Sidebar";
 import { BOTS, type Bot } from "@/lib/bots";
-import { loadBots, loadChats, saveBots, saveChats, store, toApi, uid, useBackClose, type Chat as ChatT, type Mode, type Msg } from "@/lib/client";
+import { getLang, loadBots, loadChats, saveBots, saveChats, store, toApi, uid, useBackClose, type Chat as ChatT, type Mode, type Msg } from "@/lib/client";
 
 const titleFrom = (text: string) => (text.length > 42 ? `${text.slice(0, 42).trim()}…` : text) || "Image chat";
 
@@ -19,6 +19,7 @@ export default function Chat({ vision, provider }: { vision: boolean; provider: 
   const [botId, setBotId] = useState("mac");
   const [activeId, setActiveId] = useState<string | null>(null);
   const [mode, setModeState] = useState<Mode>("fast");
+  const [lang, setLangState] = useState("auto"); // reply language
   const [busyId, setBusyId] = useState<string | null>(null); // the reply that is streaming right now
   const [drawer, setDrawer] = useState(false);
   const [sheet, setSheet] = useState(false); // the Bots screen
@@ -45,6 +46,7 @@ export default function Chat({ vision, provider }: { vision: boolean; provider: 
     setBotId(id);
     setActiveId(saved.find((c) => c.id === store.get("active", true) && (c.botId ?? "mac") === id)?.id ?? null);
     setModeState((store.get("mode") as Mode) || "fast");
+    setLangState(getLang());
     setReady(true);
   }, []);
 
@@ -89,6 +91,10 @@ export default function Chat({ vision, provider }: { vision: boolean; provider: 
     setModeState(m);
     store.set("mode", m);
   };
+  const setLang = (l: string) => {
+    setLangState(l);
+    store.set("lang", l);
+  };
 
   // The mascot looks down at the input while the user types.
   const onType = useCallback(() => {
@@ -128,7 +134,14 @@ export default function Chat({ vision, provider }: { vision: boolean; provider: 
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode, bot: { name: chatBot.name, prompt: chatBot.prompt }, messages: toApi(history) }),
+        body: JSON.stringify({
+          mode,
+          lang,
+          locale: navigator.language,
+          tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          bot: { name: chatBot.name, prompt: chatBot.prompt },
+          messages: toApi(history),
+        }),
         signal: ctrl.signal,
       });
       if (!res.ok || !res.body) {
@@ -200,7 +213,7 @@ export default function Chat({ vision, provider }: { vision: boolean; provider: 
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="flex h-dvh overflow-hidden" style={{ "--accent": bot.color } as CSSProperties}>
+      <div className={`flex h-dvh overflow-hidden ${sheet ? "sheet-open" : ""}`} style={{ "--accent": bot.color } as CSSProperties}>
         <Sidebar
           bot={bot}
           chats={botChats}
@@ -232,10 +245,10 @@ export default function Chat({ vision, provider }: { vision: boolean; provider: 
             </div>
             <button
               onClick={openBots}
-              className="flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/[.04] px-3 text-xs font-semibold transition hover:border-accent/50"
+              className="flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/[.05] px-3 text-xs font-semibold transition hover:border-white/25 hover:bg-white/[.09]"
               aria-label="Bots: switch or create a bot"
             >
-              <LayoutGrid size={14} className="text-accent" /> Bots
+              <LayoutGrid size={14} /> Bots
             </button>
             <button onClick={newChat} className="icon-btn ml-auto" aria-label="New chat" title="New chat">
               <SquarePen size={19} />
@@ -255,7 +268,7 @@ export default function Chat({ vision, provider }: { vision: boolean; provider: 
                         <button
                           key={s}
                           onClick={() => send(s.slice(s.indexOf(" ") + 1))}
-                          className="glass rounded-2xl px-4 py-3.5 text-left text-sm text-pearl/85 transition hover:-translate-y-0.5 hover:border-accent/40 hover:text-pearl"
+                          className="glass rounded-2xl px-4 py-3.5 text-left text-sm text-pearl/85 transition hover:-translate-y-0.5 hover:border-white/20 hover:text-pearl"
                         >
                           {s}
                         </button>
@@ -291,6 +304,8 @@ export default function Chat({ vision, provider }: { vision: boolean; provider: 
               busy={!!busyId}
               mode={mode}
               setMode={setMode}
+              lang={lang}
+              setLang={setLang}
               vision={vision}
               placeholder={`Message ${bot.name}…`}
             />

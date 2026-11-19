@@ -76,7 +76,8 @@ export async function POST(req: Request) {
     const mode = isMode(asked) ? asked : "fast";
     // The selected bot's personality arrives with every request (custom bots live only in the browser).
     const bot = { name: str(body?.bot?.name, 60) || BOTS[0].name, prompt: str(body?.bot?.prompt, 4000) || BOTS[0].prompt };
-    system = systemPrompt(bot, mode);
+    // Reply language (or "auto"), plus the device's language and time zone for local dates, currency and calendar times.
+    system = systemPrompt(bot, mode, { lang: str(body?.lang, 20), locale: str(body?.locale, 35), tz: str(body?.tz, 60) });
     temperature = TEMPERATURE;
   }
 

@@ -1,9 +1,10 @@
 "use client";
 
 import { memo, useEffect, useState } from "react";
-import { Check, Copy, RotateCcw, Square, Volume2 } from "lucide-react";
+import { Check, Copy, RotateCcw, Share2, Square, Volume2 } from "lucide-react";
 import Markdown from "./Markdown";
 import Mascot, { BotIcon, type Mood } from "./Mascot";
+import { withoutAppLinks } from "@/lib/apps";
 import type { Bot } from "@/lib/bots";
 import { ERRORS, speak, useTypewriter, type Msg } from "@/lib/client";
 
@@ -31,13 +32,15 @@ function Actions({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [canSpeak, setCanSpeak] = useState(false);
+  const [canShare, setCanShare] = useState(false);
   useEffect(() => {
     setCanSpeak("speechSynthesis" in window);
+    setCanShare("share" in navigator);
   }, []);
   useEffect(() => () => void (speaking && speechSynthesis.cancel()), [speaking]);
 
   const copy = () =>
-    navigator.clipboard?.writeText(text).then(() => {
+    navigator.clipboard?.writeText(withoutAppLinks(text)).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
     });
@@ -50,10 +53,16 @@ function Actions({ text }: { text: string }) {
   return (
     <div className="-ml-2 mt-1.5 flex gap-0.5">
       <button onClick={copy} className="icon-btn size-8" aria-label="Copy reply" title="Copy">
-        {copied ? <Check size={15} className="text-cyan" /> : <Copy size={15} />}
+        {copied ? <Check size={15} className="text-pearl" /> : <Copy size={15} />}
       </button>
+      {canShare && (
+        // The phone's share sheet: send any reply to any app (Instagram, Slack, Notes…).
+        <button onClick={() => navigator.share({ text: withoutAppLinks(text) }).catch(() => {})} className="icon-btn size-8" aria-label="Share reply" title="Share to any app">
+          <Share2 size={15} />
+        </button>
+      )}
       {canSpeak && (
-        <button onClick={toggleSpeak} className={`icon-btn size-8 ${speaking ? "text-cyan" : ""}`} aria-label={speaking ? "Stop reading" : "Read aloud"} title={speaking ? "Stop" : "Read aloud"}>
+        <button onClick={toggleSpeak} className={`icon-btn size-8 ${speaking ? "text-pearl" : ""}`} aria-label={speaking ? "Stop reading" : "Read aloud"} title={speaking ? "Stop" : "Read aloud"}>
           {speaking ? <Square size={13} fill="currentColor" /> : <Volume2 size={16} />}
         </button>
       )}
@@ -72,7 +81,7 @@ function Message({ msg, bot, streaming, animate, mood, onRetry }: Props) {
       <div className="flex flex-col items-end gap-2">
         {msg.image && <img src={msg.image} alt="Your upload" className="max-h-64 max-w-[75%] rounded-2xl border border-white/10 object-cover" />}
         {msg.content && (
-          <div className="max-w-[85%] whitespace-pre-wrap break-words rounded-3xl rounded-br-lg border border-white/10 bg-gradient-to-br from-violet/30 to-cyan/[.12] px-4 py-2.5 text-[15px] leading-relaxed shadow-[0_8px_30px_-12px_rgb(139_92_246/.5)]">
+          <div dir="auto" className="bubble max-w-[85%] whitespace-pre-wrap break-words rounded-3xl rounded-br-lg px-4 py-2.5 text-[15px] leading-relaxed">
             {msg.content}
           </div>
         )}
@@ -88,10 +97,10 @@ function Message({ msg, bot, streaming, animate, mood, onRetry }: Props) {
         {thinking ? <Dots /> : shown && <Markdown text={shown} typing={typing} />}
         {msg.error && (
           <div className={`flex flex-wrap items-center gap-3 ${msg.content ? "mt-3" : ""}`}>
-            <p className={`rounded-2xl border px-4 py-2.5 leading-relaxed ${msg.error === "stopped" ? "border-white/10 text-muted" : "border-violet/30 bg-violet/10"}`}>
+            <p className={`rounded-2xl border px-4 py-2.5 leading-relaxed ${msg.error === "stopped" ? "border-white/10 text-muted" : "border-white/12 bg-white/[.06]"}`}>
               {ERRORS[msg.error] ?? ERRORS.error}
             </p>
-            <button onClick={() => onRetry(msg.id)} className="flex items-center gap-1.5 text-sm text-cyan hover:underline">
+            <button onClick={() => onRetry(msg.id)} className="flex h-8 items-center gap-1.5 rounded-full border border-white/12 bg-white/[.05] px-3 text-sm font-medium transition hover:border-white/25 hover:bg-white/[.09]">
               <RotateCcw size={14} /> Try again
             </button>
           </div>

@@ -36,7 +36,7 @@ function Item({ chat, active, onSelect, onRename, onDelete }: { chat: Chat; acti
 
   return (
     <div className={`group flex items-center gap-1 rounded-xl pl-3 pr-1 transition ${active ? "bg-white/[.08] text-pearl" : "text-pearl/75 hover:bg-white/[.04]"}`}>
-      <MessageSquare size={14} className={`shrink-0 ${active ? "text-accent" : "text-muted"}`} />
+      <MessageSquare size={14} className={`shrink-0 ${active ? "text-pearl" : "text-muted"}`} />
       {editing ? (
         <input
           autoFocus
@@ -47,7 +47,7 @@ function Item({ chat, active, onSelect, onRename, onDelete }: { chat: Chat; acti
             if (e.key === "Enter") save(e.currentTarget.value);
             if (e.key === "Escape") setEditing(false);
           }}
-          className="min-w-0 flex-1 rounded-md bg-white/10 px-2 py-2 text-sm outline-none ring-1 ring-cyan/40"
+          className="min-w-0 flex-1 rounded-md bg-white/10 px-2 py-2 text-sm outline-none ring-1 ring-white/30"
         />
       ) : (
         <button onClick={() => onSelect(chat.id)} className="min-w-0 flex-1 truncate py-2.5 pl-1 text-left text-sm">
@@ -77,7 +77,7 @@ function Item({ chat, active, onSelect, onRename, onDelete }: { chat: Chat; acti
       )}
       {editing && (
         // Tapping this blurs the input, which saves the new name.
-        <button className="icon-btn size-7 text-cyan" aria-label="Save name">
+        <button className="icon-btn size-7 text-pearl" aria-label="Save name">
           <Check size={14} />
         </button>
       )}
@@ -107,8 +107,8 @@ export default function Sidebar({ bot, chats, activeId, open, onClose, onNew, on
             { label: "New chat", Icon: Plus, onClick: onNew },
             { label: "Bots", Icon: LayoutGrid, onClick: onBots },
           ].map(({ label, Icon, onClick }) => (
-            <button key={label} onClick={onClick} className="flex h-11 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[.04] text-sm font-medium transition hover:border-accent/30 hover:bg-white/[.07]">
-              <Icon size={16} className="text-accent" /> {label}
+            <button key={label} onClick={onClick} className="flex h-11 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[.05] text-sm font-medium transition hover:border-white/25 hover:bg-white/[.09]">
+              <Icon size={16} /> {label}
             </button>
           ))}
         </div>

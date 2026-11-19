@@ -41,7 +41,7 @@ export default function BotEditor({ bot, onSave, onCancel, onDelete, onExport }:
   // "Make it with AI": stream bot instructions from the one-line description.
   async function draft() {
     const idea = (f.tagline || f.name).trim();
-    if (!idea) return setHint("Write a one-line description first, e.g. “A patient cricket coach for beginners”.");
+    if (!idea) return setHint("Write a one-line description first, e.g. “A patient chess coach for beginners”.");
     ctrl.current?.abort();
     const c = (ctrl.current = new AbortController());
     setHint("");
@@ -77,7 +77,7 @@ export default function BotEditor({ bot, onSave, onCancel, onDelete, onExport }:
 
   return (
     <div style={{ "--accent": f.color } as CSSProperties} className="mx-auto max-w-2xl px-4 pb-16">
-      <header className="sticky top-0 z-10 -mx-4 flex h-14 items-center gap-2 bg-night/80 px-2 backdrop-blur-xl sm:px-4">
+      <header className="sticky top-0 z-10 -mx-4 flex h-14 items-center gap-2 bg-night/60 px-2 backdrop-blur-xl sm:px-4">
         <button onClick={onCancel} className="icon-btn" aria-label="Back to bots">
           <ArrowLeft size={20} />
         </button>
@@ -103,7 +103,7 @@ export default function BotEditor({ bot, onSave, onCancel, onDelete, onExport }:
       </section>
 
       <Field label="Name">
-        <input value={f.name} onChange={(e) => set({ name: e.target.value })} maxLength={40} placeholder="Cricket Guru" aria-label="Name" className={field} />
+        <input value={f.name} onChange={(e) => set({ name: e.target.value })} maxLength={40} placeholder="Chess Coach" aria-label="Name" className={field} />
       </Field>
 
       <Field label="One-line description">
@@ -111,7 +111,7 @@ export default function BotEditor({ bot, onSave, onCancel, onDelete, onExport }:
           value={f.tagline}
           onChange={(e) => set({ tagline: e.target.value })}
           maxLength={90}
-          placeholder="A patient cricket coach for beginners"
+          placeholder="A patient chess coach for beginners"
           aria-label="One-line description"
           className={field}
         />
@@ -169,7 +169,7 @@ export default function BotEditor({ bot, onSave, onCancel, onDelete, onExport }:
           <button
             onClick={draft}
             disabled={drafting}
-            className="flex h-8 items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 text-xs font-semibold text-accent transition hover:bg-accent/20 disabled:opacity-60"
+            className="bg-brand flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-night shadow-[0_4px_18px_-6px_rgb(255_255_255/.5)] transition hover:scale-[1.03] disabled:opacity-60"
           >
             <Sparkles size={13} className={drafting ? "animate-pulse" : ""} />
             {drafting ? "Writing…" : "Make it with AI"}
@@ -185,7 +185,7 @@ export default function BotEditor({ bot, onSave, onCancel, onDelete, onExport }:
           aria-label="Personality & instructions"
           className={`${field} resize-y leading-relaxed`}
         />
-        <p className={`mt-2 text-sm ${hint ? "text-violet-200" : "text-xs text-muted"}`}>{hint || "Tip: write a one-line description, then tap “Make it with AI”."}</p>
+        <p className={`mt-2 text-sm ${hint ? "text-pearl" : "text-xs text-muted"}`}>{hint || "Tip: write a one-line description, then tap “Make it with AI”."}</p>
       </Field>
 
       <Field label="Greeting message">
